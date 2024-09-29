@@ -1,0 +1,5 @@
+@BackendNETAPI_HostAddress = http://localhost:5274
+
+POST {{BackendNETAPI_HostAddress}}/api/
+Accept: application/json
+###
