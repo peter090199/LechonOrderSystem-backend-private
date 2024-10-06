@@ -11,8 +11,7 @@ namespace BackendNETAPI.Model
         public string EmpName { get; set; } = "";
         public string Address { get; set; } = "";
         public string ContactNo { get; set; } = "";
-        public string ImagePath { get; set; } // Use string? for nullable
-
+        public string ImagePath { get; set; } = "";
 
 
     }

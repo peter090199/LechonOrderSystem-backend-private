@@ -1,6 +1,7 @@
 ﻿using BackendNETAPI.Data;
 using BackendNETAPI.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +12,16 @@ namespace BackendNETAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
 
-    public class EmployeesController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly MyDbContext _context;
+  
 
-        public EmployeesController(MyDbContext context)
+        public ProductsController(MyDbContext context)
         {
             _context = context;
         }
+    
 
         // GET: api/Products
         [HttpGet]   
@@ -40,6 +43,20 @@ namespace BackendNETAPI.Controllers
 
             return Ok(employee); // Wrap the employee object in an Ok() result to ensure it returns as JSON
         }
+
+        [HttpGet("GetProductByImageName/{filename}")]
+        public async Task<ActionResult<Products>> GetUserByUsername(string filename)
+        {
+            // Find the user by their username
+            var pr = await _context.Employees
+                                     .FirstOrDefaultAsync(u => u.EmpName == filename);
+            if (pr == null)
+            {
+                return NotFound($"Product with username '{filename}' not found.");
+            }
+            return Ok(pr);
+        }
+
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
@@ -83,48 +100,21 @@ namespace BackendNETAPI.Controllers
 
         // POST: api/Products
         [HttpPost("SavedEmployees")]
-        public async Task<ActionResult<Products>> PostEmployee([FromBody] Products employee)
+        public async Task<ActionResult<Products>> PostEmployee([FromBody] Products products)
         {
-            if (employee == null)
+            if (products == null)
             {
                 return BadRequest("Invalid employee data.");
             }
 
             try
             {
-                if (employee.ImagePath != null && employee.ImagePath.Length > 0)
-                {
-                    // Generate a unique file name and save path
-                    var fileName = Path.GetFileName(employee.ImagePath);
-                    var directoryPath = Path.Combine("wwwroot", "images");
-                    var filePath = Path.Combine(directoryPath, fileName);
-
-                    // Ensure the directory exists
-                    if (Directory.Exists(directoryPath) == false)
-                    {
-                        Directory.CreateDirectory(directoryPath); // Create the directory if it doesn't exist
-                    }
-
-                    // Save the file to the server
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                     //   await employee.ImagePath.CopyToAsync(stream);
-                    }
-
-                    // Save the image path in the database
-                    employee.ImagePath = filePath; // Assuming you have ImagePath property in your Products model
-                }
-                 _context.Employees.Add(employee);
-
-                // Save changes to the database
+                 _context.Employees.Add(products);
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Successfully Saved." });
-                // Return the created employee with a 201 status code
-              //  return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
             }
             catch (Exception ex)
             {
-                // Log the error (not shown here) and return a generic error message
                 return StatusCode(500, "An error occurred while saving the employee." + ex.Message);
             }
 
@@ -143,6 +133,46 @@ namespace BackendNETAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = $"Employee with ID {empID} deleted successfully." });
         }
+
+        // POST: api/Products/SavedEmployees
+        [HttpPost("SavedProducts")]
+        public async Task<IActionResult> SaveEmployee([FromForm] Products products, [FromForm] IFormFile image)
+        {
+            if (image != null && image.Length > 0)
+            {
+                //// Create the directory to store images if it doesn't exist
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadDir))
+                    Directory.CreateDirectory(uploadDir);
+
+                // Save image file to server
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+                var filePath = Path.Combine(uploadDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+              //  Save product/ employee data to the database
+                var data = new Products
+                {
+                    EmpID = products.EmpID,
+                    EmpName = products.EmpName,
+                    Address = products.Address,
+                    ContactNo = products.ContactNo,
+                    ImagePath = fileName
+                };
+                _context.Employees.Add(data);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Product saved successfully" });
+
+            }
+
+            return BadRequest("Image upload failed.");
+        }
+
 
 
     }

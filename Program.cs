@@ -98,6 +98,8 @@ app.UseCors("AllowSpecificOrigins"); // Enable CORS policy
 app.UseAuthentication(); // Add authentication middleware
 app.UseAuthorization(); // Add authorization middleware
 
+// Serve static files from wwwroot/uploads
+app.UseStaticFiles();
 
 
 app.MapControllers(); // Map API controllers
