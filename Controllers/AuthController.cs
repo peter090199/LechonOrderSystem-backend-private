@@ -25,7 +25,7 @@ namespace BackendNETAPI.Controllers
             _passwordHasher = new PasswordHasher<User>();
             _configuration = configuration;
         }
-        // PUT: api/Employees/5
+        // PUT: api/Products/5
         [HttpPut("UpdateUser/{id}")]
         public async Task<IActionResult> PutEmployee(int id, [FromBody] User data) // Accepts JSON input
         {
@@ -65,7 +65,7 @@ namespace BackendNETAPI.Controllers
                 }
             }
 
-            return Ok(new { message = "Employees successfully updated." });
+            return Ok(new { message = "Products successfully updated." });
         }
 
         private bool EmployeeExists(int id)
@@ -79,7 +79,7 @@ namespace BackendNETAPI.Controllers
             return await _context.Users.ToListAsync();
         }
       
-        //// GET: api/Employees/5
+        //// GET: api/Products/5
         //[HttpGet("{userName}")]
         //public async Task<ActionResult<User>> GetUserName(string userName)
         //{

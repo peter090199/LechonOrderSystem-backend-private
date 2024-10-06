@@ -48,7 +48,7 @@ namespace BackendNETAPI.Controllers
         }
 
 
-        // POST: api/Employees
+        // POST: api/Products
         [HttpPost("SavedModules")]
         public async Task<ActionResult<Modules>> SaveModules([FromBody] Modules m)
         {
@@ -62,7 +62,7 @@ namespace BackendNETAPI.Controllers
                 m.RecordStatus = "Active";
                 _context.Modules.Add(m);
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Successfuly Saved." });
+                return Ok(new { message = "Successfully Saved." });
             }
             catch (Exception ex)
             {

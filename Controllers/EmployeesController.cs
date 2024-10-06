@@ -20,16 +20,16 @@ namespace BackendNETAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Employees
+        // GET: api/Products
         [HttpGet]   
-        public async Task<ActionResult<IEnumerable<Employees>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<Products>>> GetEmployees()
         {
             return await _context.Employees.ToListAsync();
         }
 
-        // GET: api/Employees/5
+        // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Employees>> GetEmployee(int id)
+        public async Task<ActionResult<Products>> GetEmployee(int id)
         {
             var employee = await _context.Employees.FindAsync(id);
 
@@ -41,9 +41,9 @@ namespace BackendNETAPI.Controllers
             return Ok(employee); // Wrap the employee object in an Ok() result to ensure it returns as JSON
         }
 
-        // PUT: api/Employees/5
+        // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(int id, [FromBody] Employees employee) // Accepts JSON input
+        public async Task<IActionResult> PutEmployee(int id, [FromBody] Products employee) // Accepts JSON input
         {
             if (id != employee.Id)
             {
@@ -74,16 +74,16 @@ namespace BackendNETAPI.Controllers
                 }
             }
 
-            return Ok(new { message = "Employees successfully updated." });
+            return Ok(new { message = "Products successfully updated." });
         }
         private bool EmployeeExists(int id)
         {
             return _context.Employees.Any(e => e.Id == id);
         }
 
-        // POST: api/Employees
+        // POST: api/Products
         [HttpPost("SavedEmployees")]
-        public async Task<ActionResult<Employees>> PostEmployee([FromBody] Employees employee)
+        public async Task<ActionResult<Products>> PostEmployee([FromBody] Products employee)
         {
             if (employee == null)
             {
@@ -92,12 +92,33 @@ namespace BackendNETAPI.Controllers
 
             try
             {
-                // Add the employee to the context
-                _context.Employees.Add(employee);
+                if (employee.ImagePath != null && employee.ImagePath.Length > 0)
+                {
+                    // Generate a unique file name and save path
+                    var fileName = Path.GetFileName(employee.ImagePath);
+                    var directoryPath = Path.Combine("wwwroot", "images");
+                    var filePath = Path.Combine(directoryPath, fileName);
+
+                    // Ensure the directory exists
+                    if (Directory.Exists(directoryPath) == false)
+                    {
+                        Directory.CreateDirectory(directoryPath); // Create the directory if it doesn't exist
+                    }
+
+                    // Save the file to the server
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                     //   await employee.ImagePath.CopyToAsync(stream);
+                    }
+
+                    // Save the image path in the database
+                    employee.ImagePath = filePath; // Assuming you have ImagePath property in your Products model
+                }
+                 _context.Employees.Add(employee);
 
                 // Save changes to the database
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Successfuly Saved." });
+                return Ok(new { message = "Successfully Saved." });
                 // Return the created employee with a 201 status code
               //  return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
             }

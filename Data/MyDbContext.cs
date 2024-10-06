@@ -8,7 +8,7 @@ namespace BackendNETAPI.Data
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Employees> Employees{ get; set; }
+        public DbSet<Products> Employees{ get; set; }
 
         public DbSet<UserAccessrights> UserAccessrights { get; set; }
         public DbSet<Modules> Modules { get; set; }
@@ -21,7 +21,7 @@ namespace BackendNETAPI.Data
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id); // Configuring the primary key
 
-            modelBuilder.Entity<Employees>()
+            modelBuilder.Entity<Products>()
              .HasKey(e => e.Id);
 
             modelBuilder.Entity<UserAccessrights>()
