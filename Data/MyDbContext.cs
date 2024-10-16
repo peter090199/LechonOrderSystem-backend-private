@@ -8,8 +8,9 @@ namespace BackendNETAPI.Data
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Products> Employees{ get; set; }
-
+        public DbSet<Products> Products{ get; set; }
+        
+        public DbSet<ProductsOrder> ProductsOrder { get; set; }
         public DbSet<UserAccessrights> UserAccessrights { get; set; }
         public DbSet<Modules> Modules { get; set; }
         public DbSet<SubModule> SubModules { get    ; set; }
@@ -23,6 +24,9 @@ namespace BackendNETAPI.Data
 
             modelBuilder.Entity<Products>()
              .HasKey(e => e.Id);
+
+            modelBuilder.Entity<ProductsOrder>()
+           .HasKey(e => e.OrderId);
 
             modelBuilder.Entity<UserAccessrights>()
            .HasKey(b => b.Id);

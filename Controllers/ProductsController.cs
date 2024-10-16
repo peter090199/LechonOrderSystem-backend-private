@@ -27,14 +27,14 @@ namespace BackendNETAPI.Controllers
         [HttpGet]   
         public async Task<ActionResult<IEnumerable<Products>>> GetEmployees()
         {
-            return await _context.Employees.ToListAsync();
+            return await _context.Products.ToListAsync();
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Products>> GetEmployee(int id)
         {
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _context.Products.FindAsync(id);
 
             if (employee == null)
             {
@@ -48,8 +48,8 @@ namespace BackendNETAPI.Controllers
         public async Task<ActionResult<Products>> GetUserByUsername(string filename)
         {
             // Find the user by their username
-            var pr = await _context.Employees
-                                     .FirstOrDefaultAsync(u => u.EmpName == filename);
+            var pr = await _context.Products
+                                     .FirstOrDefaultAsync(u => u.ProductName == filename);
             if (pr == null)
             {
                 return NotFound($"Product with username '{filename}' not found.");
@@ -60,20 +60,19 @@ namespace BackendNETAPI.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(int id, [FromBody] Products employee) // Accepts JSON input
+        public async Task<IActionResult> PutEmployee(int id, [FromBody] Products product) // Accepts JSON input
         {
-            if (id != employee.Id)
+            if (id != product.Id)
             {
-                return BadRequest("Employee ID mismatch.");
+                return BadRequest("Product ID mismatch.");
             }
             // Check if the employee exists in the database
-            var existingEmployee = await _context.Employees.FindAsync(id);
-            if (existingEmployee == null)
+            var pd = await _context.Products.FindAsync(id);
+            if (pd == null)
             {
-                return NotFound("Employee not found.");
+                return NotFound("Product not found.");
             }
-            // Update the existing employee's details
-            _context.Entry(existingEmployee).CurrentValues.SetValues(employee);
+            _context.Entry(pd).CurrentValues.SetValues(product);
 
             try
             {
@@ -81,9 +80,9 @@ namespace BackendNETAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmployeeExists(id))
+                if (!ProductExist(id))
                 {
-                    return NotFound("Employee not found.");
+                    return NotFound("Product not found.");
                 }
                 else
                 {
@@ -93,9 +92,9 @@ namespace BackendNETAPI.Controllers
 
             return Ok(new { message = "Products successfully updated." });
         }
-        private bool EmployeeExists(int id)
+        private bool ProductExist(int id)
         {
-            return _context.Employees.Any(e => e.Id == id);
+            return _context.Products.Any(e => e.Id == id);
         }
 
         // POST: api/Products
@@ -109,7 +108,7 @@ namespace BackendNETAPI.Controllers
 
             try
             {
-                 _context.Employees.Add(products);
+                 _context.Products.Add(products);
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Successfully Saved." });
             }
@@ -124,12 +123,12 @@ namespace BackendNETAPI.Controllers
         [HttpDelete("{empID}")]
         public async Task<IActionResult> DeleteEmployee(string empID)
         {
-            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.EmpID == empID);
+            var employee = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == empID);
             if (employee == null)
             {
                 return NotFound(new { message = "Employee not found." });
             }
-            _context.Employees.Remove(employee);
+            _context.Products.Remove(employee);
             await _context.SaveChangesAsync();
             return Ok(new { message = $"Employee with ID {empID} deleted successfully." });
         }
@@ -140,7 +139,6 @@ namespace BackendNETAPI.Controllers
         {
             if (image != null && image.Length > 0)
             {
-                //// Create the directory to store images if it doesn't exist
                 var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 if (!Directory.Exists(uploadDir))
                     Directory.CreateDirectory(uploadDir);
@@ -154,16 +152,17 @@ namespace BackendNETAPI.Controllers
                     await image.CopyToAsync(stream);
                 }
 
-              //  Save product/ employee data to the database
                 var data = new Products
                 {
-                    EmpID = products.EmpID,
-                    EmpName = products.EmpName,
-                    Address = products.Address,
-                    ContactNo = products.ContactNo,
-                    ImagePath = fileName
+                    ProductId = products.ProductId,
+                    ProductName = products.ProductName,
+                    Category = products.Category,
+                    Price = products.Price,
+                    ImagePath = fileName,
+                    AlertQty = products.AlertQty,
+                    Quantity = products.Quantity,
                 };
-                _context.Employees.Add(data);
+                _context.Products.Add(data);
                 await _context.SaveChangesAsync();
 
                 return Ok(new { Message = "Product saved successfully" });
@@ -171,6 +170,54 @@ namespace BackendNETAPI.Controllers
             }
 
             return BadRequest("Image upload failed.");
+        }
+
+        [HttpPost("update-inventory-status/{id}")]
+        public IActionResult UpdateInventoryStatus(int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest("Id is required and must be greater than 0.");
+            }
+
+            try
+            {
+                var product = _context.Products.Find(id);
+                if (product == null)
+                {
+                    return NotFound(new { message = "Product not found." });
+                }
+                 product.InventoryStatus = "ongoing";
+                _context.SaveChanges();
+                return Ok(new { message = "Inventory status updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while updating the inventory status.", error = ex.Message });
+            }
+        }
+
+
+        [HttpGet("GetProductByOngoing")]
+        public async Task<IActionResult> GetProductByOngoing()
+        {
+            try
+            {
+                var ongoingProducts = await _context.Products
+                    .Where(x => x.InventoryStatus == "ongoing") 
+                    .ToListAsync(); 
+
+                if (ongoingProducts == null || !ongoingProducts.Any())
+                {
+                    return NotFound(new { message = "No ongoing products found." });
+                }
+
+                return Ok(ongoingProducts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching ongoing products.", error = ex.Message });
+            }
         }
 
 
