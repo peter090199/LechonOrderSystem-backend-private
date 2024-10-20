@@ -29,6 +29,7 @@ namespace BackendNETAPI.Controllers
         {
             return await _context.Products.ToListAsync();
         }
+       // Products/GetInventoryPendingProducts
 
         // GET: api/Products/5
         [HttpGet("{id}")]
@@ -108,6 +109,7 @@ namespace BackendNETAPI.Controllers
 
             try
             {
+                products.InventoryStatus = "pending";
                  _context.Products.Add(products);
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Successfully Saved." });
@@ -161,6 +163,7 @@ namespace BackendNETAPI.Controllers
                     ImagePath = fileName,
                     AlertQty = products.AlertQty,
                     Quantity = products.Quantity,
+                    InventoryStatus = "pending",
                 };
                 _context.Products.Add(data);
                 await _context.SaveChangesAsync();
@@ -219,7 +222,29 @@ namespace BackendNETAPI.Controllers
                 return StatusCode(500, new { message = "An error occurred while fetching ongoing products.", error = ex.Message });
             }
         }
+        //
 
+        [HttpGet("GetInventoryPendingProducts")]
+        public async Task<IActionResult> GetInventoryPendingProducts()
+        {
+            try
+            {
+                var ongoingProducts = await _context.Products
+                    .Where(x => x.InventoryStatus == "pending")
+                    .ToListAsync();
+
+                if (ongoingProducts == null)
+                {
+                    return NotFound(new { message = "No pending products found." });
+                }
+
+                return Ok(ongoingProducts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching ongoing products.", error = ex.Message });
+            }
+        }
 
 
     }
