@@ -95,15 +95,28 @@ var app = builder.Build();
 //    });
 //}
 
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
-    app.UseSwagger(); // Enable Swagger in development
+    // Enable Swagger in Development and Staging
+    app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
     });
 }
+else if (app.Environment.IsProduction())
+{
+    // Optional: Enable Swagger in Production, but protect it
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
 
+        // Optional: Add basic auth or limit access
+        c.RoutePrefix = string.Empty; // To make swagger available at root
+        c.DocumentTitle = "Production Swagger UI"; // Optional customization
+    });
+}
 
 app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
 app.UseRouting();
