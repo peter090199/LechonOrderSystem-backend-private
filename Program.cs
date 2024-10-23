@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigins",
         policy =>
         {
-                   policy.WithOrigins("http://localhost:4200")
+                   policy.WithOrigins("https://witty-cliff-0cb39d610.5.azurestaticapps.net")
                   .AllowAnyHeader() // Allow any header
                   .AllowAnyMethod(); // Allow any HTTP method
         });
@@ -84,10 +84,14 @@ builder.WebHost.ConfigureKestrel(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger(); // Enable Swagger in development
-    app.UseSwaggerUI(); // Enable Swagger UI in development
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
+    });
 }
 
 app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
