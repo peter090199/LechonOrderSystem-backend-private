@@ -49,7 +49,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
+      # Check contents of artifact directory (debugging step)
+      - name: List files in directory
+        run: dir
+
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -57,5 +61,5 @@ jobs:
         with:
           app-name: 'BackendNETAPI20241020211453'
           slot-name: 'Production'
-          package: ./publish
+          package: ./.net-app
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BEB541562888460DBA0932DA4F795766 }}
