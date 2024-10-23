@@ -89,7 +89,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwagger(); // Enable Swagger in development
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket");
         c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
     });
 }
