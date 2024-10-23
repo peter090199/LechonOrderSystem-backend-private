@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
 builder.Services.AddSwaggerGen(); // Add Swagger services
@@ -93,13 +94,13 @@ var app = builder.Build();
 //        c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
 //    });
 //}
+
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger(); // Enable Swagger in development
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
-        c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
     });
 }
 
