@@ -52,7 +52,7 @@ jobs:
 
       # Check contents of artifact directory (debugging step)
       - name: List files in directory
-        run: dir
+        run: dir ./.net-app
 
       # Deploy to Azure Web App
       - name: Deploy to Azure Web App
@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'BackendNETAPI20241020211453'
           slot-name: 'Production'
-          package: ./.net-app
+          package: ./.net-app/publish
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BEB541562888460DBA0932DA4F795766 }}
