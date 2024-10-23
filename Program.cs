@@ -84,6 +84,15 @@ builder.WebHost.ConfigureKestrel(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+//if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+//{
+//    app.UseSwagger(); // Enable Swagger in development
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
+//        c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
+//    });
+//}
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger(); // Enable Swagger in development
@@ -93,6 +102,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
         c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
     });
 }
+
 
 app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
 app.UseRouting();
