@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace BackendNETAPI.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
