@@ -30,10 +30,6 @@ jobs:
       - name: dotnet publish
         run: dotnet publish BackendNETAPI.sln -c Release -o ./publish
 
-      # Verify published files exist (debugging step)
-      - name: List files in publish directory
-        run: dir ./publish
-
       # Upload the published artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -54,19 +50,16 @@ jobs:
         with:
           name: .net-app
 
-      # Check contents of the current directory after download
-      - name: List files in current directory
+      # Check contents of artifact directory (debugging step)
+      - name: List files in directory
         run: dir
 
-      # Check contents of .net-app directory (debugging step)
-      - name: List files in .net-app directory
-        run: dir ./.net-app
-
-     - name: Deploy to Azure Web App
+      # Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'BackendNETAPI20241020211453'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DDC753A7CADB4BB4BFD079D0A3365E22 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BEB541562888460DBA0932DA4F795766 }}
