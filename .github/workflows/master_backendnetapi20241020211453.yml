@@ -43,7 +43,7 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -55,11 +55,11 @@ jobs:
         run: dir
 
       # Deploy to Azure Web App
-        - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'BackendNETAPI20241020211453'
+          app-name: 'BackendNETAPI20241020211453' # Ensure this matches your Azure App Service name
           slot-name: 'Production'
-          package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EAB134F039CF4128B04703F7B0D083DD }}
+          package: '.' # Use the path to the downloaded artifact
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EAB134F039CF4128B04703F7B0D083DD }} # Ensure this is correct
