@@ -18,17 +18,24 @@ jobs:
         with:
           dotnet-version: '8.x'
 
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore BackendNETAPI.sln
+
+      # Build the project
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build BackendNETAPI.sln --configuration Release --no-restore
 
+      # Publish the project
       - name: dotnet publish
-        run: dotnet publish -c Release -o myapp
+        run: dotnet publish BackendNETAPI.sln -c Release -o ./publish
 
+      # Upload the published artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: myapp
+          path: ./publish
 
   deploy:
     runs-on: windows-latest
@@ -43,11 +50,12 @@ jobs:
         with:
           name: .net-app
       
+      # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'BackendNETAPI20241020211453'
           slot-name: 'Production'
-          package: myapp
+          package: ./publish
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BEB541562888460DBA0932DA4F795766 }}
