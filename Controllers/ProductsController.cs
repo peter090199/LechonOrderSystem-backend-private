@@ -135,44 +135,100 @@ namespace BackendNETAPI.Controllers
         }
 
         // POST: api/Products/SavedEmployees
-        [HttpPost("SavedProducts")]
-        public async Task<IActionResult> SaveEmployee([FromForm] Products products, [FromForm] IFormFile image)
+        //[HttpPost("SavedProducts")]
+        //public async Task<IActionResult> SaveEmployee([FromForm] Products products, [FromForm] IFormFile image)
+        //{
+        //    if (image != null && image.Length > 0)
+        //    {
+        //        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        //        if (!Directory.Exists(uploadDir))
+        //            Directory.CreateDirectory(uploadDir);
+
+        //        // Save image file to server
+        //        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+        //        var filePath = Path.Combine(uploadDir, fileName);
+
+        //        using (var stream = new FileStream(filePath, FileMode.Create))
+        //        {
+        //            await image.CopyToAsync(stream);
+        //        }
+
+        //        var data = new Products
+        //        {
+        //            ProductId = products.ProductId,
+        //            ProductName = products.ProductName,
+        //            Category = products.Category,
+        //            Price = products.Price,
+        //            ImagePath = fileName,
+        //            AlertQty = products.AlertQty,
+        //            Quantity = products.Quantity,
+        //            InventoryStatus = "pending",
+        //        };
+        //        _context.Products.Add(data);
+        //        await _context.SaveChangesAsync();
+
+        //        return Ok(new { Message = "Product saved successfully" });
+
+        //    }
+
+        //    return BadRequest("Image upload failed.");
+        //}
+
+        // POST: api/Products/SaveProduct
+        [HttpPost("SaveProducts")]
+        public async Task<IActionResult> SaveProduct([FromForm] Products products, [FromForm] IFormFile image)
         {
             if (image != null && image.Length > 0)
             {
+                // Dynamically get the upload directory (could be from appsettings.json or environment-specific settings)
                 var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadDir))
-                    Directory.CreateDirectory(uploadDir);
 
-                // Save image file to server
+                if (!Directory.Exists(uploadDir))
+                    Directory.CreateDirectory(uploadDir); // Create directory if it doesn't exist
+
+                // Generate a unique file name for the uploaded image
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
                 var filePath = Path.Combine(uploadDir, fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                // Save the image file to the server
+                try
                 {
-                    await image.CopyToAsync(stream);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await image.CopyToAsync(stream);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
 
+                // Construct the public URL for the uploaded image
+                var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+
+                // Create a new product object with the image path
                 var data = new Products
                 {
                     ProductId = products.ProductId,
                     ProductName = products.ProductName,
                     Category = products.Category,
                     Price = products.Price,
-                    ImagePath = fileName,
+                    ImagePath = imageUrl, // Store the image URL
                     AlertQty = products.AlertQty,
                     Quantity = products.Quantity,
-                    InventoryStatus = "pending",
+                    InventoryStatus = "pending"
                 };
+
+                // Save product data to the database
                 _context.Products.Add(data);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { Message = "Product saved successfully" });
-
+                return Ok(new { Message = "Product saved successfully", ImageUrl = imageUrl });
             }
 
-            return BadRequest("Image upload failed.");
+            return BadRequest("No image uploaded or image upload failed.");
         }
+
 
         [HttpPost("update-inventory-status/{id}")]
         public IActionResult UpdateInventoryStatus(int id)

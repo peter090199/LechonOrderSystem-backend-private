@@ -36,7 +36,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigins",
         policy =>
         {
-                   policy.WithOrigins("https://witty-cliff-0cb39d610.5.azurestaticapps.net")
+                   policy.WithOrigins("https://witty-cliff-0cb39d610.5.azurestaticapps.net",
+                       "http://localhost:4200")
                   .AllowAnyHeader() // Allow any header
                   .AllowAnyMethod(); // Allow any HTTP method
         });
@@ -102,6 +103,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
+          c.DocumentTitle = "Local Swagger UI"; 
     });
 }
 else if (app.Environment.IsProduction())

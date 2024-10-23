@@ -123,29 +123,40 @@ namespace BackendNETAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "User registered successfully." });
         }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] User user)
         {
-          
+            try
+            {
+                if (user == null || string.IsNullOrWhiteSpace(user.UserName) || string.IsNullOrWhiteSpace(user.Password))
+                {
+                    return BadRequest(new { message = "Invalid login request." });
+                }
+
                 // Find user in the database
                 var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName);
 
                 if (existingUser == null)
                 {
+                    // Avoid logging user-specific details for security
                     return Unauthorized(new { message = "Invalid credentials." });
                 }
-           
+
                 // Verify the password
                 var result = _passwordHasher.VerifyHashedPassword(existingUser, existingUser.Password, user.Password);
                 if (result == PasswordVerificationResult.Failed)
                 {
+                    // Generic message to avoid revealing if username or password was incorrect
                     return Unauthorized(new { message = "Invalid credentials." });
                 }
+
+                // Assign user role
                 var userRole = existingUser.Role;
 
-                // Generate JWT token
+                // Generate JWT token (ensure this method does not log sensitive information)
                 var token = GenerateJwtToken(existingUser);
+
+                // Assign modules based on user role
                 var assignedModules = new List<string>();
 
                 if (userRole == "admin")
@@ -157,16 +168,24 @@ namespace BackendNETAPI.Controllers
                     assignedModules.Add("/header");
                 }
 
-            
+                // Return the token and user role
                 return Ok(new
                 {
                     token,
                     role = userRole,
                     modules = assignedModules
                 });
-            
+            }
+            catch (Exception ex)
+            {
+                // Avoid logging detailed exceptions or sensitive information for security
+                // Optionally, log the error in a secure way without exposing sensitive data
+                // Example: logger.LogError(ex, "An error occurred during login attempt.");
+
+                return StatusCode(500, new { message = "An error occurred while processing the request." } + ex.Message);
+            }
         }
-    
+
 
         private string GenerateJwtToken(User user)
         {

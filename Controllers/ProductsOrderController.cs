@@ -42,25 +42,33 @@ namespace BackendNETAPI.Controllers
         }
 
         [HttpGet("GetProductsOrderById/{userId}")]
-        public async Task<ActionResult<ProductsOrder>> UserOrderByID(int userId)
+        public async Task<ActionResult<List<ProductsOrder>>> UserOrderByID(int userId)
         {
-            var userOrders = _context.ProductsOrder
-                                       .Where(x => x.UserId == userId)
-                                       .ToList();
-            if (userOrders == null)
+            // Fetch user orders asynchronously
+            var userOrders = await _context.ProductsOrder
+                                           .Where(x => x.UserId == userId)
+                                           .ToListAsync();
+
+            // Check if the user has any orders
+            if (userOrders == null || userOrders.Count == 0)
             {
-                return NotFound();
+                return NotFound(new { message = "No orders found for this user." });
             }
-            return Ok(userOrders); 
+
+            // Return the orders
+            return Ok(userOrders);
         }
 
         [HttpGet("GetCountsOrderById/{userId}")]
-        public async Task<ActionResult<ProductsOrder>> GetCountsOrderById(int userId)
+        public async Task<ActionResult<int>> GetCountsOrderById(int userId)
         {
-            var userOrders = _context.ProductsOrder
-                .Where(x => x.UserId == userId).Count();
-                                       
-            return Ok(userOrders);
+            // Count the number of orders asynchronously
+            var orderCount = await _context.ProductsOrder
+                                            .Where(x => x.UserId == userId)
+                                            .CountAsync();
+
+            // Return the count of orders
+            return Ok(orderCount);
         }
 
         [HttpDelete("{orderId}")]
