@@ -9,10 +9,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using BackendNETAPI.Models;
 using Microsoft.AspNetCore.Identity;
+using BackendNETAPI.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
@@ -22,24 +23,15 @@ builder.Services.AddSwaggerGen(); // Add Swagger services
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//// Corrected line: use 'builder.Services' instead of 'services'
-//builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-//     //  .AddEntityFrameworkStores<MyDbContext>()
-//       .AddDefaultTokenProviders();
-
-
-//services.AddScoped<IUserService, UserService>(); // Register the user service
-
-// Configure CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigins",
-        policy =>
+        builder =>
         {
-                   policy.WithOrigins("https://witty-cliff-0cb39d610.5.azurestaticapps.net",
-                       "http://localhost:4200")
-                  .AllowAnyHeader() // Allow any header
-                  .AllowAnyMethod(); // Allow any HTTP method
+            builder.WithOrigins("http://localhost:4200")  // Allow your Angular app's URL
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();  // Important: Allow credentials
         });
 });
 
@@ -85,17 +77,6 @@ builder.WebHost.ConfigureKestrel(options =>
 // Build the application
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-//if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
-//{
-//    app.UseSwagger(); // Enable Swagger in development
-//    app.UseSwaggerUI(c =>
-//    {
-//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
-//        c.RoutePrefix = string.Empty;  // Makes Swagger available at the root (e.g., /swagger)
-//    });
-//}
-
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     // Enable Swagger in Development and Staging
@@ -106,33 +87,27 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
           c.DocumentTitle = "Local Swagger UI"; 
     });
 }
-else if (app.Environment.IsProduction())
-{
-    // Optional: Enable Swagger in Production, but protect it
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
+//else if (app.Environment.IsProduction())
+//{
+//    // Optional: Enable Swagger in Production, but protect it
+//    app.UseSwagger();
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineOinkMarket-v1");
 
-        // Optional: Add basic auth or limit access
-        c.RoutePrefix = string.Empty; // To make swagger available at root
-        c.DocumentTitle = "Production Swagger UI"; // Optional customization
-    });
-}
+//        // Optional: Add basic auth or limit access
+//        c.RoutePrefix = string.Empty; // To make swagger available at root
+//        c.DocumentTitle = "Production Swagger UI"; // Optional customization
+//    });
+//}
 
 app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
 app.UseRouting();
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.UseCors("AllowSpecificOrigins"); // Enable CORS policy
-
 app.UseAuthentication(); // Add authentication middleware
 app.UseAuthorization(); // Add authorization middleware
-
-// Serve static files from wwwroot/uploads
 app.UseStaticFiles();
-
-
 app.MapControllers(); // Map API controllers
-
-// Run the application
 app.Run();
