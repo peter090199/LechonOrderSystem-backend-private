@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigins",
         builder =>
         {
-            builder.WithOrigins("https://green-flamingo-284673.hostingersite.com")  // Allow your Angular app's URL
+            builder.WithOrigins("https://backendnetapi20241020211453.azurewebsites.net")  // Allow your Angular app's URL
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials();  // Important: Allow credentials
